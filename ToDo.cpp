@@ -52,18 +52,9 @@ Task::Task()
 // in this function we are using the formula which gives us the number of the week day with givven day , month and year
 int dayofweek(int d, int m, int y)
 {
-    int mon;
-	if(m > 2)
-		mon = m;
-	else{
-		mon = (12+m);
-		y--;
-	}
-	int year = y % 100;
-	int c = y / 100;
-	int w = (d + floor((13*(mon+1))/5) + year + floor(year/4) + floor(c/4) + (5*c));
-	w = w % 7;
-	return w - 1;
+    static int t[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
+    y -= m < 3;
+    return ( y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
 }
 
 //=============================================================
@@ -223,12 +214,13 @@ void date::display()
             }
         }
     }
-    cout << endl
-         << "--------------------------" << endl;
+    cout << endl << "--------------------------" << endl;
     SetConsoleTextAttribute(hConsole, white);
-    cout << "n-Next\np-Previous\ns-Select\nq-Quit\n";
-    cout << "Option= ";
-    cout << endl;
+    cout << "n-Next" << endl;
+    cout << "p-Previous" << endl;
+    cout << "s-Select" << endl;
+    cout << "q-Quit" << endl;
+    cout << "Option= " << endl;
     SetConsoleTextAttribute(hConsole, white);
 }
 
@@ -240,7 +232,6 @@ void date::SetNameToMonth()
     case 1:
         this->nameOfMonth = "January";
         break;
-        ;
     case 2:
         this->nameOfMonth = "February";
         break;
@@ -326,6 +317,7 @@ int date::MaxDayOfMonth()
 }
 
 //=============================================================
+// next day
 void date::n()
 {
     if (this->MaxDayOfMonth() != this->day)
@@ -347,6 +339,7 @@ void date::n()
 }
 
 //=============================================================
+// previous day
 void date::p()
 {
 
@@ -405,15 +398,19 @@ void CalendarMenu()
         switch (x)
         {
         case 'n':
+        case 'N':
             G.n();
             break;
         case 'p':
+        case 'P':
             G.p();
             break;
         case 's':
+        case 'S':
             G.s();
             break;
         case 'q':
+        case 'Q':
             flag = false;
             break;
         default:
@@ -442,9 +439,12 @@ void printTask(int index)
     for (int i = 0; i < size; i++)
     {
         if (i == 0)
-            cout << "--------------------\n";
+		{
+        	cout << "--------------------" << endl;
+		}
+    	
+        // dif ==> difference between date of task and today ( used for color of task )
         int dif = (TaskList[i].year * 365 + TaskList[i].month * 30 + TaskList[i].day) - (today.getYear() * 365 + today.getMonth() * 30 + today.getDay());
-        
         if (dif < 0)
         {
             SetConsoleTextAttribute(hConsole, red);
@@ -458,7 +458,9 @@ void printTask(int index)
             SetConsoleTextAttribute(hConsole, yellow);
         }
         if (i == index)
-            SetConsoleTextAttribute(hConsole, blue);
+        {
+        	SetConsoleTextAttribute(hConsole, blue);
+		}
         cout << "Task tile: " << TaskList[i].title << endl;
         cout << "Detail: " << TaskList[i].detail << endl;
         cout << "Date: " << TaskList[i].month << "/" << TaskList[i].day << "/" << TaskList[i].year << endl;
@@ -476,13 +478,14 @@ void printTask(int index)
             cout << "Status: Undone";
         }
         SetConsoleTextAttribute(hConsole, white);
-        cout << "\n--------------------\n";
+        cout << endl << "--------------------" << endl;
     }
     if (size == 0)
-        cout << "task list is empty.\n";
+        cout << "Task list is empty" << endl;
 }
 
 //=============================================================
+// checking the format of clock
 bool isFormatValid(string str)
 {
     if (str.length() == 8)
@@ -518,7 +521,11 @@ void addTask()
     getline(cin, newTask.title);
     cout << "Enter the detail of task: ";
     getline(cin, newTask.detail);
-    cout << "enter the level of this task:\nh-high\nm-medium\nl-low\nenter your option:  ";
+    cout << "Enter the level of this task: " << endl;
+    cout << "h-High" << endl;
+    cout << "m-Medium" << endl;
+    cout << "l-Low" << endl;
+    cout << "Enter your option: ";
     char x;
     bool flag = true;
     while (flag)
@@ -528,28 +535,28 @@ void addTask()
         {
         case 'h':
         case 'H':
-            newTask.level = "high";
+            newTask.level = "High";
             flag = false;
             break;
         case 'm':
         case 'M':
-            newTask.level = "medium";
+            newTask.level = "Medium";
             flag = false;
             break;
         case 'l':
         case 'L':
-            newTask.level = "low";
+            newTask.level = "Low";
             flag = false;
             break;
         default:
-            cout << "wrong input\n";
+            cout << "Wrong input" << endl;
             break;
         }
     }
     system("cls");
     date G;
     flag = true;
-    cout << "choose a date on calendar:\n";
+    cout << "Choose a date on calendar: " << endl;
     G.display();
     while (flag)
     {
@@ -590,7 +597,8 @@ void addTask()
     flag = true;
     while (flag)
     {
-        cout << "S-Save\nQ-Quit\n";
+        cout << "S-Save" << endl;
+        cout << "Q-Quit" << endl;
         x = getch();
         switch (x)
         {
@@ -604,7 +612,7 @@ void addTask()
             flag = false;
             break;
         default:
-            cout << "wrong input\n";
+            cout << "Wrong input" << endl;
             break;
         }
     }
@@ -629,7 +637,11 @@ void editTask(int index)
     cout << "Enter your new detail of task: ";
     getline(cin, newTask.detail);
     cout << "old level: " << TaskList[index].level << endl;
-    cout << "enter new level of this task:\nh-high\nm-medium\nl-low\nenter your option:  ";
+    cout << "enter new level of this task: " << endl;
+    cout << "h-High" << endl;
+    cout << "m-Medium" << endl;
+    cout << "l-Low" << endl;
+    cout << "Enter your option: ";
     char x;
     bool flag = true;
     while (flag)
@@ -639,21 +651,21 @@ void editTask(int index)
         {
         case 'h':
         case 'H':
-            newTask.level = "high";
+            newTask.level = "High";
             flag = false;
             break;
         case 'm':
         case 'M':
-            newTask.level = "medium";
+            newTask.level = "Medium";
             flag = false;
             break;
         case 'l':
         case 'L':
-            newTask.level = "low";
+            newTask.level = "Low";
             flag = false;
             break;
         default:
-            cout << "wrong input\n";
+            cout << "wrong input" << endl;
             break;
         }
     }
@@ -661,7 +673,7 @@ void editTask(int index)
     date G;
     flag = true;
     cout << "old date: " << TaskList[index].month << "/" << TaskList[index].day << "/" << TaskList[index].year << endl;
-    cout << "choose a date on calendar:\n";
+    cout << "Choose a date on calendar:" << endl;
     G.display();
     while (flag)
     {
@@ -703,7 +715,8 @@ void editTask(int index)
     flag = true;
     while (flag)
     {
-        cout << "S-Save\nQ-Quit\n";
+        cout << "S-Save" << endl;
+        cout << "Q-Quit" << endl;
         x = getch();
         switch (x)
         {
@@ -717,7 +730,7 @@ void editTask(int index)
             flag = false;
             break;
         default:
-            cout << "wrong input\n";
+            cout << "Wrong input" << endl;
             break;
         }
     }
@@ -795,6 +808,7 @@ void TaskMenu()
 }
 
 //=============================================================
+// in this function we are showing the tasks that we take on a current date
 void showDateTask(int day, int month, int year)
 {
     for (int i = 0; i < TaskList.size(); i++)
@@ -802,7 +816,7 @@ void showDateTask(int day, int month, int year)
         if (TaskList[i].year == year && TaskList[i].month == month && TaskList[i].day == day)
         {
             if (i == 0)
-                cout << "--------------------\n";
+                cout << "--------------------" << endl;
             cout << "Task tile: " << TaskList[i].title << endl;
             cout << "Detail: " << TaskList[i].detail << endl;
             cout << "Date: " << TaskList[i].month << "/" << TaskList[i].day << "/" << TaskList[i].year << endl;
@@ -818,11 +832,11 @@ void showDateTask(int day, int month, int year)
             {
                 cout << "Status: Undone";
             }
-            cout << "\n--------------------\n";
+            cout << endl << "--------------------" << endl;
         }
     }
     if (TaskList.size() == 0)
-        cout << "task listt is empty.\n";
+        cout << "Task list is empty." << endl;
 }
 
 //=============================================================
@@ -871,6 +885,6 @@ int main()
             break;
         }
     }
-    cin.get();
+    
     return 0;
 }
